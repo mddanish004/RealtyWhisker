@@ -3,6 +3,7 @@ dotenv.config();
 import express from 'express';
 import leadsRouter from './routes/leads.js';
 import configRouter from './routes/config.js'
+import chatRouter from './routes/chat.js'
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,6 +14,9 @@ app.use(express.json());
 // Mount the leads router at /leads
 app.use('/leads', leadsRouter);
 app.use('/config', configRouter);
+app.use('/chat', chatRouter);
+
+
 
 // GET /health endpoint
 app.get('/health', (req, res) => {
