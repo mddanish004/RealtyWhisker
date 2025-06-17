@@ -15,11 +15,26 @@ datasource db {
 }
 
 model Lead {
-  id        Int      @id @default(autoincrement())
+  id        Int          @id @default(autoincrement())
   name      String
-  phone     String
-  source    String
+  phone     String?
+  email     String?
+  status    String       @default("New")
+  source    String?
   message   String?
-  status    String?
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  conversations Conversation[]
+}
+
+model Conversation {
+  id                 Int          @id @default(autoincrement())
+  leadId             Int          @unique
+  lead               Lead         @relation(fields: [leadId], references: [id])
+  currentQuestionIndex Int        @default(0)
+  answers            Json         @default("{}")
+  classification     String?
+  leadName           String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 }
