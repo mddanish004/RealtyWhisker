@@ -1,0 +1,33 @@
+{
+    "industry": "real-estate",
+    "greeting": "Hi {name}! Thanks for reaching out about your property needs.",
+    "questions": [
+        {
+            "key": "location",
+            "prompt": "Which city or location are you interested in?"
+        },
+        {
+            "key": "budget",
+            "prompt": "What is your budget range for the property?"
+        },
+        {
+            "key": "timeline",
+            "prompt": "What is your expected timeline for making a purchase?"
+        }
+    ],
+    "rules": {
+        "hot": {
+            "budget": "greater than 1000000",
+            "timeline": "less than 6 months",
+            "intent": "high"
+        },
+        "cold": {
+            "budget": "not specified or vague",
+            "timeline": "not specified or more than 12 months",
+            "intent": "browsing or unclear"
+        },
+        "invalid": {
+            "response": "gibberish, non-serious, or irrelevant answers"
+        }
+    }
+}
