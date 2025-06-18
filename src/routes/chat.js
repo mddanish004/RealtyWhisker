@@ -4,12 +4,10 @@ import prisma from '../utils/prismaClient.js';
 
 const router = express.Router();
 
-// POST /chat - Handle user message and return bot response
 router.post('/', async (req, res, next) => {
     const { leadId, message, name } = req.body;
     console.log('[POST /chat] Request:', { leadId, message, name });
 
-    // Input validation
     if (message === undefined || typeof message !== 'string') {
         console.error('[POST /chat] Validation error: Invalid message');
         return res.status(400).json({ error: 'message is required and must be a string' });
@@ -21,7 +19,6 @@ router.post('/', async (req, res, next) => {
 
     let finalLeadId;
     
-    // Handle leadId or create new lead
     if (leadId) {
         const parsedLeadId = parseInt(leadId);
         if (isNaN(parsedLeadId)) {
