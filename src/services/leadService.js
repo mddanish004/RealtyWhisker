@@ -26,7 +26,6 @@ export async function createLead({ name, phone, source, message }) {
     }
 }
 
-// Temporary test function (uncomment to test)
 async function testCreateLead() {
     try {
         const result = await createLead({
