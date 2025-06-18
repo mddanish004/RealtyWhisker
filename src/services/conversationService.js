@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import prisma from '../utils/prismaClient.js';
 dotenv.config();
 
-// Groq API integration
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 async function callGroq(prompt) {
@@ -31,7 +30,6 @@ async function callGroq(prompt) {
 export async function handleChat(leadId, message, leadName) {
     console.log(`[handleChat] leadId="${leadId}", message="${message}", leadName="${leadName}"`);
 
-    // Parse leadId to integer
     const parsedLeadId = parseInt(leadId);
     if (isNaN(parsedLeadId)) {
         console.error('[handleChat] Invalid leadId: not a number', { leadId });
@@ -51,7 +49,6 @@ export async function handleChat(leadId, message, leadName) {
     }
     const questions = Array.isArray(config.questions) ? config.questions : [];
 
-    // Validate lead
     let lead;
     try {
         lead = await prisma.lead.findUnique({ where: { id: parsedLeadId } });
@@ -64,7 +61,6 @@ export async function handleChat(leadId, message, leadName) {
         return { response: null, state: null, error: `Database error: ${error.message}` };
     }
 
-    // Find or create conversation
     let conversation;
     try {
         conversation = await prisma.conversation.findUnique({ where: { leadId: parsedLeadId } });
@@ -73,7 +69,6 @@ export async function handleChat(leadId, message, leadName) {
         return { response: null, state: null, error: `Database error: ${error.message}` };
     }
 
-    // New conversation
     if (!conversation) {
         try {
             conversation = await prisma.conversation.create({
@@ -94,7 +89,6 @@ export async function handleChat(leadId, message, leadName) {
         }
     }
 
-    // After greeting, ask first question
     if (conversation.currentQuestionIndex === 0) {
         if (!questions.length) {
             console.error('[handleChat] No questions configured');
@@ -118,7 +112,6 @@ export async function handleChat(leadId, message, leadName) {
         }
     }
 
-    // Store answer to previous question
     const currentQuestionIndex = conversation.currentQuestionIndex;
     const previousQuestionIndex = currentQuestionIndex - 1;
     let updatedAnswers = { ...conversation.answers };
@@ -130,7 +123,6 @@ export async function handleChat(leadId, message, leadName) {
         }
     }
 
-    // Check for more questions
     if (currentQuestionIndex < questions.length) {
         try {
             const nextQuestion = questions[currentQuestionIndex];
@@ -157,7 +149,6 @@ export async function handleChat(leadId, message, leadName) {
         }
     }
 
-    // No more questions - classify and summarize
     let classification;
     try {
         classification = classifyLead(updatedAnswers, config);
@@ -294,13 +285,11 @@ export function classifyLead(answers, config) {
     return 'Cold';
 }
 
-// --- Test block: Simulate a conversation with a valid leadId ---
 if (import.meta.url === process.argv[1] || import.meta.url === `file://${process.argv[1]}`) {
     (async () => {
         console.log('Starting conversation test...\n');
         
         try {
-            // Create a test lead
             const leadName = 'Rohit Sharma';
             let lead;
             try {
@@ -317,9 +306,8 @@ if (import.meta.url === process.argv[1] || import.meta.url === `file://${process
                 console.error('Failed to create test lead:', error.message);
                 return;
             }
-            const leadId = lead.id; // Integer
+            const leadId = lead.id; 
 
-            // Load config
             let config;
             try {
                 config = loadConfig('real-estate');
@@ -330,10 +318,8 @@ if (import.meta.url === process.argv[1] || import.meta.url === `file://${process
             }
             const questions = config.questions || [];
 
-            // Simulate conversation
             let responseObj;
 
-            // Step 1: Start conversation (greeting)
             console.log('\n=== STEP 1: Initial greeting ===');
             responseObj = await handleChat(leadId.toString(), '', leadName);
             if (responseObj.error) {
@@ -342,7 +328,6 @@ if (import.meta.url === process.argv[1] || import.meta.url === `file://${process
             console.log('Bot:', responseObj.response);
             console.log('State:', responseObj.state);
 
-            // Step 2: Get first question
             console.log('\n=== STEP 2: Get first question ===');
             responseObj = await handleChat(leadId.toString(), 'Hi!', leadName);
             if (responseObj.error) {
@@ -351,7 +336,6 @@ if (import.meta.url === process.argv[1] || import.meta.url === `file://${process
             console.log('Bot:', responseObj.response);
             console.log('State:', responseObj.state);
 
-            // Step 3: Answer questions (location, budget, timeline)
             const answers = ['Mumbai', '1 crore', '3 months'];
             for (let i = 0; i < answers.length; i++) {
                 console.log(`\n=== STEP ${i + 3}: Answer question ${i + 1} ===`);
@@ -364,12 +348,10 @@ if (import.meta.url === process.argv[1] || import.meta.url === `file://${process
                 console.log('State:', responseObj.state);
             }
 
-            // Final summary
             console.log('\n=== CONVERSATION COMPLETE ===');
             console.log('Final classification:', responseObj.state.classification);
             console.log('Final answers:', responseObj.state.answers);
 
-            // Cleanup
             console.log('\nCleaning up test data...');
             await prisma.conversation.deleteMany({ where: { leadId } });
             await prisma.lead.delete({ where: { id: lead.id } });
